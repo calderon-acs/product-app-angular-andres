@@ -1,7 +1,10 @@
 <table mat-table [dataSource]="listProducts" class="mat-elevation-z8">
     <ng-container matColumnDef="image">
         <th mat-header-cell *matHeaderCellDef> Imagen </th>
-        <td mat-cell *matCellDef="let element"><img title="{{element.title}}" src="{{element.image}}" /> </td>
+        <td mat-cell *matCellDef="let element">
+            @defer {<img title="{{element.title}}" src="{{element.image}}" />
+            }
+        </td>
     </ng-container>
     <ng-container matColumnDef="title">
         <th mat-header-cell *matHeaderCellDef> Nombre </th>
