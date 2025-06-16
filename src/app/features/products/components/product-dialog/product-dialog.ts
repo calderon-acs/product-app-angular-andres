@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Inject,
-  OnInit,
-} from '@angular/core';
+import { Component, inject, Inject, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -13,6 +8,7 @@ import {
 } from '@angular/forms';
 import {
   MAT_DIALOG_DATA,
+  MatDialog,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
@@ -22,7 +18,10 @@ import { MatButton } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../../../../services/product.service';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { SuccessDialog } from '../../../../componets/success-dialog/success-dialog';
+import { ErrorDialog } from '../../../../componets/error-dialog/error-dialog';
+import { finalize } from 'rxjs';
+import { LoadingService } from '../../../../services/loading.service';
 
 @Component({
   selector: 'app-product-dialog',
@@ -35,22 +34,22 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatFormFieldModule,
     CommonModule,
     FormsModule,
-    MatProgressSpinnerModule,
   ],
   templateUrl: './product-dialog.html',
   styleUrl: './product-dialog.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductDialog implements OnInit {
   formProduct!: FormGroup;
   product!: Product;
   description: String = 'Crear';
   isSaving: Boolean = false;
+  readonly dialog = inject(MatDialog);
 
   constructor(
     private fb: FormBuilder,
     private productService: ProductService,
     private dialogRef: MatDialogRef<ProductDialog>,
+    private loadingService: LoadingService,
     @Inject(MAT_DIALOG_DATA) public data: Product
   ) {}
 
@@ -87,22 +86,29 @@ export class ProductDialog implements OnInit {
       return;
     }
 
-    this.isSaving = true;
+    this.loadingService.show();
+
     const data = this.formProduct.value;
 
-    const peticion =
+    const service =
       data?.id === 0
         ? this.productService.add(data)
         : this.productService.update(data);
 
-    peticion.subscribe({
-      next: (res) => {
-        this.dialogRef.close();
-        this.formProduct.reset();
-      },
-      error: (err) => {
-        console.error(err);
-      },
-    });
+    service
+      .pipe(
+        finalize(() => {
+          this.loadingService.hide();
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.dialog.open(SuccessDialog, { data: 'Se creó con exito' });
+          this.dialogRef.close();
+        },
+        error: (err) => {
+          this.dialog.open(ErrorDialog, { data: 'Ocurrio un error' });
+        },
+      });
   }
 }

@@ -1,3 +1,4 @@
+import { LoadingService } from './../../../../services/loading.service';
 import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
@@ -7,6 +8,9 @@ import { MatIcon } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { ProductDialog } from '../product-dialog/product-dialog';
 import { ConfirmDialog } from '../../../../componets/confirm-dialog/confirm-dialog';
+import { SuccessDialog } from '../../../../componets/success-dialog/success-dialog';
+import { ErrorDialog } from '../../../../componets/error-dialog/error-dialog';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-products-table',
@@ -23,12 +27,12 @@ export class ProductsTable implements OnInit {
     'category',
     'actions',
   ];
-  readonly dialogProduct = inject(MatDialog);
-  readonly dialogConfirm = inject(MatDialog);
-  
+  readonly dialog = inject(MatDialog);
+
   constructor(
     private productService: ProductService,
-    private cdRef: ChangeDetectorRef
+    private cdRef: ChangeDetectorRef,
+    private LoadingService: LoadingService
   ) {}
 
   ngOnInit(): void {
@@ -36,25 +40,39 @@ export class ProductsTable implements OnInit {
   }
 
   updateProduct(product: Product) {
-    const dialogRef = this.dialogProduct.open(ProductDialog, {
+    const dialogRef = this.dialog.open(ProductDialog, {
       data: product,
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
+    dialogRef.afterClosed().subscribe(() => {
       this.getAllProducts();
     });
   }
 
   deleteProduct(product: Product) {
-    const dialogRef = this.dialogConfirm.open(ConfirmDialog, {
+    const dialogRef = this.dialog.open(ConfirmDialog, {
       data: { msg: '¿Desea eliminar el producto?' },
     });
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.productService.delete(product.id).subscribe((data) => {
-          this.getAllProducts();
-        });
+        this.LoadingService.show();
+        this.productService
+          .delete(product.id)
+          .pipe(
+            finalize(() => {
+              this.LoadingService.hide();
+            })
+          )
+          .subscribe({
+            next: (data) => {
+              this.dialog.open(SuccessDialog, { data: 'Se elimino con exito' });
+              this.getAllProducts();
+            },
+            error: (error) => {
+              this.dialog.open(ErrorDialog, { data: 'Ocurrio un error' });
+            },
+          });
       }
     });
   }

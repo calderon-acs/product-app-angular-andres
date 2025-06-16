@@ -40,9 +40,6 @@
     </mat-dialog-content>
     <mat-dialog-actions align="end">
         <button matButton mat-dialog-close>Cancelar</button>
-        <button matButton type="submit" cdkFocusInitial *ngIf="!isSaving; else showSpinner">Guardar</button>
-        <ng-template #showSpinner>
-            <mat-spinner diameter="40"></mat-spinner>
-        </ng-template>
+        <button matButton type="submit" cdkFocusInitial>Guardar</button>
     </mat-dialog-actions>
 </form>
