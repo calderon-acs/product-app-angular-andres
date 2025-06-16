@@ -1,5 +1,11 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import {
+  AfterViewChecked,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
 import { ProductService } from '../../../../services/product.service';
 import { Product } from '../../models/product.model';
@@ -8,23 +14,21 @@ import { Product } from '../../models/product.model';
   selector: 'app-products-table',
   imports: [MatTableModule, CurrencyPipe],
   templateUrl: './products-table.html',
-  styleUrl: './products-table.scss'
+  styleUrl: './products-table.scss',
 })
-export class ProductsTable implements OnInit{
-
+export class ProductsTable implements OnInit {
   listProducts: Product[] = [];
-  displayedColumns: string[] = [
-    'image',
-    'title',
-    'price',
-    'category'
-  ];
+  displayedColumns: string[] = ['image', 'title', 'price', 'category'];
 
-  constructor(private productService: ProductService) {}
-  
-   ngOnInit(): void {
+  constructor(
+    private productService: ProductService,
+    private cdRef: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
     this.productService.getAll().subscribe((data) => {
       this.listProducts = data;
+      this.cdRef.detectChanges();
     });
   }
 }
