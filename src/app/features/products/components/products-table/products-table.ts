@@ -6,6 +6,7 @@ import { Product } from '../../models/product.model';
 import { MatIcon } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { ProductDialog } from '../product-dialog/product-dialog';
+import { ConfirmDialog } from '../../../../componets/confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-products-table',
@@ -23,7 +24,8 @@ export class ProductsTable implements OnInit {
     'actions',
   ];
   readonly dialogProduct = inject(MatDialog);
-
+  readonly dialogConfirm = inject(MatDialog);
+  
   constructor(
     private productService: ProductService,
     private cdRef: ChangeDetectorRef
@@ -43,7 +45,19 @@ export class ProductsTable implements OnInit {
     });
   }
 
-  deleteProduct(product: Product) {}
+  deleteProduct(product: Product) {
+    const dialogRef = this.dialogConfirm.open(ConfirmDialog, {
+      data: { msg: '¿Desea eliminar el producto?' },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.productService.delete(product.id).subscribe((data) => {
+          this.getAllProducts();
+        });
+      }
+    });
+  }
 
   getAllProducts() {
     this.productService.getAll().subscribe((data) => {

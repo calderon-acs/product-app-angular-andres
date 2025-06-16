@@ -55,8 +55,6 @@ export class ProductDialog implements OnInit {
   ) {}
 
   ngOnInit(): void {
-
-    console.log(this.data);
     this.product = this.data;
 
     this.description = this.data?.id ? 'Actualizar' : 'Crear';
