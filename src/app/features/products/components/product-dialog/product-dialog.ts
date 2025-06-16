@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  OnInit,
+} from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -6,13 +11,18 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { MatDialogModule } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { MatError, MatInputModule } from '@angular/material/input';
 import { Product } from '../../models/product.model';
 import { MatButton } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../../../../services/product.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-product-dialog',
@@ -25,6 +35,7 @@ import { ProductService } from '../../../../services/product.service';
     MatFormFieldModule,
     CommonModule,
     FormsModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './product-dialog.html',
   styleUrl: './product-dialog.scss',
@@ -32,31 +43,40 @@ import { ProductService } from '../../../../services/product.service';
 })
 export class ProductDialog implements OnInit {
   formProduct!: FormGroup;
-  producto!: Product;
+  product!: Product;
+  description: String = 'Crear';
+  isSaving: Boolean = false;
 
   constructor(
     private fb: FormBuilder,
-    private productService: ProductService
+    private productService: ProductService,
+    private dialogRef: MatDialogRef<ProductDialog>,
+    @Inject(MAT_DIALOG_DATA) public data: Product
   ) {}
 
   ngOnInit(): void {
+
+    console.log(this.data);
+    this.product = this.data;
+
+    this.description = this.data?.id ? 'Actualizar' : 'Crear';
     this.formProduct = this.fb.group({
-      id: [this.producto?.id || 0, [Validators.required]],
+      id: [this.product?.id || 0, [Validators.required]],
       title: [
-        this.producto?.title || 'short black',
+        this.product?.title || 'short black',
         [Validators.required, Validators.minLength(3)],
       ],
       price: [
-        this.producto?.price || 100,
+        this.product?.price || 100,
         [Validators.required, Validators.min(0.01)],
       ],
       description: [
-        this.producto?.description || 'a black short with a white cord',
+        this.product?.description || 'a black short with a white cord',
         [Validators.required],
       ],
-      category: [this.producto?.category || 'category', [Validators.required]],
+      category: [this.product?.category || 'category', [Validators.required]],
       image: [
-        this.producto?.image ||
+        this.product?.image ||
           'https://m.media-amazon.com/images/I/71xFz5wkbRL._AC_SX679_.jpg',
         [Validators.required, Validators.pattern(/^https?:\/\/.+/)],
       ],
@@ -69,13 +89,18 @@ export class ProductDialog implements OnInit {
       return;
     }
 
+    this.isSaving = true;
     const data = this.formProduct.value;
 
-    const peticion = this.productService.add(data);
+    const peticion =
+      data?.id === 0
+        ? this.productService.add(data)
+        : this.productService.update(data);
 
     peticion.subscribe({
       next: (res) => {
-        console.log(res);
+        this.dialogRef.close();
+        this.formProduct.reset();
       },
       error: (err) => {
         console.error(err);
