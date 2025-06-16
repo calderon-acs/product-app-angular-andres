@@ -17,6 +17,7 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
+            "outputPath": "dist/product-app-angular-andres",
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
@@ -38,6 +39,7 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "/product-app-angular-andres/",
               "budgets": [
                 {
                   "type": "initial",
