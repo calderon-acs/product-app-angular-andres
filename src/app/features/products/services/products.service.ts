@@ -17,6 +17,12 @@ export class ProductService {
     private dialog: MatDialog
   ) {}
 
+  /**
+   * Crea o actualiza un producto
+   *
+   * @param {Product} product - El producto que se desea guardar.
+   * @returns {void}
+   */
   save(data: Product): Observable<void> {
     this.loadingService.show();
 
@@ -38,6 +44,12 @@ export class ProductService {
     });
   }
 
+  /**
+   *Elimina un producto
+   *
+   * @param {Product} product - El producto que se desea eliminar.
+   * @returns {void}
+   */
   delete(product: Product): Observable<void> {
     this.loadingService.show();
 
@@ -64,6 +76,12 @@ export class ProductService {
     });
   }
 
+  /**
+   *Obtiene todos los productos
+   *
+   * @param {Product} product - El producto que se desea eliminar.
+   * @returns {void}
+   */
   getAll(): Observable<Product[]> {
     this.loadingService.show();
 

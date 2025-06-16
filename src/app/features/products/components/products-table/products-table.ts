@@ -34,6 +34,12 @@ export class ProductsTable implements OnInit {
     this.getAllProducts();
   }
 
+  /**
+   * Abre el modal para actualizar
+   *
+   * @param {Product} product - El producto que se desea actualizar.
+   * @returns {void}
+   */
   updateProduct(product: Product) {
     const dialogRef = this.dialog.open(ProductDialog, {
       data: product,
@@ -44,6 +50,12 @@ export class ProductsTable implements OnInit {
     });
   }
 
+  /**
+   * Confirma la eliminacion de un producto e invoca al servicio para eliminar
+   *
+   * @param {Product} product - El producto que se desea eliminar.
+   * @returns {void}
+   */
   deleteProduct(product: Product) {
     const dialogRef = this.dialog.open(ConfirmDialog, {
       data: { msg: '¿Desea eliminar el producto?' },
@@ -51,7 +63,7 @@ export class ProductsTable implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.productService.save(product).subscribe({
+        this.productService.delete(product).subscribe({
           next: () => {
             this.getAllProducts();
           },
@@ -60,10 +72,15 @@ export class ProductsTable implements OnInit {
     });
   }
 
+  /**
+   * Obtiene todos los productos y los asigna a la data de la tabla
+   *
+   * @returns {void}
+   */
   getAllProducts() {
     this.productService.getAll().subscribe((data) => {
       this.listProducts = data;
-      this.cdRef.detectChanges();
+      this.cdRef.detectChanges(); // se agrea para evitar el error: ExpressionChangedAfterItHasBeenCheckedError
     });
   }
 }

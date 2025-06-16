@@ -70,6 +70,7 @@ export class ProductDialog implements OnInit {
         [Validators.required, Validators.pattern(/^https?:\/\/.+/)],
       ],
     });
+    //Se agregan valores por default para pruebas
   }
 
   onSubmit() {
