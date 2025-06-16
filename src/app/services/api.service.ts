@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class ProductService {
+export class ApiService {
 
   private apiUrl = `https://fakestoreapi.com/products`;
 

@@ -1,16 +1,12 @@
-import { LoadingService } from './../../../../services/loading.service';
 import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
-import { ProductService } from '../../../../services/product.service';
 import { Product } from '../../models/product.model';
 import { MatIcon } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { ProductDialog } from '../product-dialog/product-dialog';
 import { ConfirmDialog } from '../../../../componets/confirm-dialog/confirm-dialog';
-import { SuccessDialog } from '../../../../componets/success-dialog/success-dialog';
-import { ErrorDialog } from '../../../../componets/error-dialog/error-dialog';
-import { finalize } from 'rxjs';
+import { ProductService } from '../../services/products.service';
 
 @Component({
   selector: 'app-products-table',
@@ -30,9 +26,8 @@ export class ProductsTable implements OnInit {
   readonly dialog = inject(MatDialog);
 
   constructor(
-    private productService: ProductService,
     private cdRef: ChangeDetectorRef,
-    private LoadingService: LoadingService
+    private productService: ProductService
   ) {}
 
   ngOnInit(): void {
@@ -56,23 +51,11 @@ export class ProductsTable implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.LoadingService.show();
-        this.productService
-          .delete(product.id)
-          .pipe(
-            finalize(() => {
-              this.LoadingService.hide();
-            })
-          )
-          .subscribe({
-            next: (data) => {
-              this.dialog.open(SuccessDialog, { data: 'Se elimino con exito' });
-              this.getAllProducts();
-            },
-            error: (error) => {
-              this.dialog.open(ErrorDialog, { data: 'Ocurrio un error' });
-            },
-          });
+        this.productService.save(product).subscribe({
+          next: () => {
+            this.getAllProducts();
+          },
+        });
       }
     });
   }

@@ -1,4 +1,4 @@
-import { Component, inject, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -8,7 +8,6 @@ import {
 } from '@angular/forms';
 import {
   MAT_DIALOG_DATA,
-  MatDialog,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
@@ -17,11 +16,7 @@ import { Product } from '../../models/product.model';
 import { MatButton } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { CommonModule } from '@angular/common';
-import { ProductService } from '../../../../services/product.service';
-import { SuccessDialog } from '../../../../componets/success-dialog/success-dialog';
-import { ErrorDialog } from '../../../../componets/error-dialog/error-dialog';
-import { finalize } from 'rxjs';
-import { LoadingService } from '../../../../services/loading.service';
+import { ProductService } from '../../services/products.service';
 
 @Component({
   selector: 'app-product-dialog',
@@ -42,14 +37,11 @@ export class ProductDialog implements OnInit {
   formProduct!: FormGroup;
   product!: Product;
   description: String = 'Crear';
-  isSaving: Boolean = false;
-  readonly dialog = inject(MatDialog);
 
   constructor(
     private fb: FormBuilder,
     private productService: ProductService,
     private dialogRef: MatDialogRef<ProductDialog>,
-    private loadingService: LoadingService,
     @Inject(MAT_DIALOG_DATA) public data: Product
   ) {}
 
@@ -86,29 +78,10 @@ export class ProductDialog implements OnInit {
       return;
     }
 
-    this.loadingService.show();
-
     const data = this.formProduct.value;
 
-    const service =
-      data?.id === 0
-        ? this.productService.add(data)
-        : this.productService.update(data);
-
-    service
-      .pipe(
-        finalize(() => {
-          this.loadingService.hide();
-        })
-      )
-      .subscribe({
-        next: () => {
-          this.dialog.open(SuccessDialog, { data: 'Se creó con exito' });
-          this.dialogRef.close();
-        },
-        error: (err) => {
-          this.dialog.open(ErrorDialog, { data: 'Ocurrio un error' });
-        },
-      });
+    this.productService.save(data).subscribe({
+      next: () => this.dialogRef.close(),
+    });
   }
 }
