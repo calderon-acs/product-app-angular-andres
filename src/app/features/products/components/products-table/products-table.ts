@@ -1,6 +1,8 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
+import { ProductService } from '../../../../services/product.service';
+import { Product } from '../../models/product.model';
 
 @Component({
   selector: 'app-products-table',
@@ -8,13 +10,21 @@ import { MatTableModule } from '@angular/material/table';
   templateUrl: './products-table.html',
   styleUrl: './products-table.scss'
 })
-export class ProductsTable {
+export class ProductsTable implements OnInit{
 
-  listProducts: any[] = [{id:1, title:"short negro", price: 100, category: "short",image:"https://m.media-amazon.com/images/I/51tMKTrGD4L._AC_SX679_.jpg"}];
+  listProducts: Product[] = [];
   displayedColumns: string[] = [
     'image',
     'title',
     'price',
     'category'
   ];
+
+  constructor(private productService: ProductService) {}
+  
+   ngOnInit(): void {
+    this.productService.getAll().subscribe((data) => {
+      this.listProducts = data;
+    });
+  }
 }
